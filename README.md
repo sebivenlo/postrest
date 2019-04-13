@@ -4,7 +4,7 @@ no pojo fidling when the database can do the major parts of the work
 
 [PostgreSQL](https://www.postgresql.org/) has very powerfull json(b) functionality
 built in. This project takes advantage of this by having postgresql do the heavy lifting
-of assembling query results into json taking json apart to modifying operation such as insert (post in rest) and update (put in rest).
+of assembling query results into json, or taking json documents apart to do modifying operation such as insert (post in rest) and update (put in rest).
 
 This makes the standard CRUD operations through a rest api a no-brainer.
 
@@ -21,13 +21,9 @@ public class StudentsService extends FantysCrudService {
     }
 
 }
-
-
 ```
 
-With the appropriate imports will make you a full crud service for a students table.
-
-
+With the appropriate imports will make you a full crud service for a students table,
 and the mentioned "self coded" FantysCrudService also contains next to nothing:
 
 ```java
