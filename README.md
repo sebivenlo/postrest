@@ -37,5 +37,5 @@ abstract class FantysCrudService extends AbstractPostRestService {
 ```
 
 The interface to the heavy lifting delegating code (the delegate being the postgres server)
-is in the AbstractPostRestService provided by this project.
+is in the `AbstractPostRestService` provided by this project.
 
