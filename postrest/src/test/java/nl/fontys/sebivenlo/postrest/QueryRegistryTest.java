@@ -12,7 +12,7 @@ import static nl.fontys.sebivenlo.postrest.QueryRegistry.QUERY_REGISTRY;
 
 /**
  *
- * @author Pieter van den Hombergh {@code <p.vandenhombergh@fontys.nl>}
+ * @author Pieter van den Hombergh {@code <pieter.van.den.hombergh@gmail.com>}
  */
 public class QueryRegistryTest {
 

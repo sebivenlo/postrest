@@ -1,5 +1,5 @@
 --
--- Author:  Pieter van den Hombergh {@code <p.vandenhombergh@fontys.nl>}
+-- Author:  Pieter van den Hombergh {@code <pieter.van.den.hombergh@gmail.com>}
 -- Created: May 10, 2018
 -- 
 

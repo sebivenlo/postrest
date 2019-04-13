@@ -6,7 +6,7 @@ import javax.ws.rs.NotFoundException;
 /**
  * Distinguish between simple JSON object and JSON Array.
  *
- * @author Pieter van den Hombergh {@code <p.vandenhombergh@fontys.nl>}
+ * @author Pieter van den Hombergh {@code <pieter.van.den.hombergh@gmail.com>}
  */
 public enum JSONType implements Function<String, String> {
     /**

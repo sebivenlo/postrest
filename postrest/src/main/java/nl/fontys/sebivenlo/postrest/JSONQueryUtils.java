@@ -17,7 +17,7 @@ import static nl.fontys.sebivenlo.postrest.QueryRegistry.QUERY_REGISTRY;
  * The static methods in this class will transform the query text, then
  * prepare it as a statement and execute it using the (optional parameters).
  *
- * @author Pieter van den Hombergh {@code <p.vandenhombergh@fontys.nl>}
+ * @author Pieter van den Hombergh {@code <pieter.van.den.hombergh@gmail.com>}
  */
 public enum JSONQueryUtils {
     ; // no values

@@ -30,7 +30,7 @@ import static nl.fontys.sebivenlo.postrest.QueryRegistry.QUERY_REGISTRY;
  * any name, a example of good style would be to use 'student_id' from the table
  * 'students'.
  *
- * @author Pieter van den Hombergh {@code <p.vandenhombergh@fontys.nl>}
+ * @author Pieter van den Hombergh {@code <pieter.van.den.hombergh@gmail.com>}
  */
 public abstract class AbstractPostRestService {
 

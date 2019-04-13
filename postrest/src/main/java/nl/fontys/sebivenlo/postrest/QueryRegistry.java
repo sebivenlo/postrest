@@ -32,7 +32,7 @@ import javax.sql.DataSource;
  * between java and sql. The query files can be found in the source folder
  * {@code src/main/resources/sql}.
  *
- * @author Pieter van den Hombergh {@code <p.vandenhombergh@fontys.nl>}
+ * @author Pieter van den Hombergh {@code <pieter.van.den.hombergh@gmail.com>}
  */
 public enum QueryRegistry {
     QUERY_REGISTRY;

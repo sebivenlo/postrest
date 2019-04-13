@@ -16,7 +16,7 @@ import org.postgresql.ds.PGConnectionPoolDataSource;
  * to be used in database integration tests. Most methods are left
  * unimplemented.
  *
- * @author Pieter van den Hombergh {@code <p.vandenhombergh@fontys.nl>}
+ * @author Pieter van den Hombergh {@code <pieter.van.den.hombergh@gmail.com>}
  */
 public enum TestDatasource implements DataSource {
     DS;
