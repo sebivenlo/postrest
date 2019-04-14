@@ -28,21 +28,30 @@ public class Generator {
     public static void main( String[] args ) throws IOException {
 
         int count = 5;
-        if ( args.length > 0 ) {
+
+        int a = 0;
+        boolean json = false;
+        while ( a < args.length ) {
             try {
-                count = Integer.parseInt( args[ 0 ] );
+                count = Integer.parseInt( args[ a ] );
             } catch ( NumberFormatException ignore ) {
                 // stay at default
             }
+            if ( args[ a ].startsWith( "-j" ) ) {
+                json = true;
+            }
+            a++;
         }
 
         Collection<Student> students = new Generator().generate( count );
 
-        students.forEach( s -> {
-            System.out.println( s.csvRecord() );
-        } );
-
-        System.out.println( toJson( students ) );
+        if ( json ) {
+            System.out.println( toJson( students ) );
+        } else {
+            students.forEach( s -> {
+                System.out.println( s.csvRecord() );
+            } );
+        }
 
     }
 
@@ -86,7 +95,15 @@ public class Generator {
                 email, g, "NEW" );
     }
 
-    Collection<Student> generate( int count ) {
+    /**
+     * Generate a collection of students with random names and birth dates.
+     * The generated collection is guaranteed to contain students that are unique in
+     * firstname+lastname+birthdate+gender
+     *
+     * @param count
+     * @return 
+     */
+    public Collection<Student> generate( int count ) {
         Set<Student> result = new LinkedHashSet<>();
 
         while ( result.size() < count ) {
@@ -99,6 +116,12 @@ public class Generator {
         return list.get( rnd.nextInt( list.size() ) );
     }
 
+    /**
+     * Return collection as json array.
+     * @param <E> the generic type of the collection.
+     * @param col to convert
+     * @return a json array
+     */
     public static <E> String toJson( Collection<E> col ) {
         Gson gson = new GsonBuilder().registerTypeAdapter( LocalDate.class,
                 new LocalDateJsonAdapter() ).create();
