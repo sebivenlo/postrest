@@ -31,6 +31,7 @@ public class Generator {
 
         int a = 0;
         boolean json = false;
+        boolean pretty = false;
         while ( a < args.length ) {
             try {
                 count = Integer.parseInt( args[ a ] );
@@ -40,13 +41,17 @@ public class Generator {
             if ( args[ a ].startsWith( "-j" ) ) {
                 json = true;
             }
+            if ( args[ a ].startsWith( "-p" ) ) {
+                json=true;
+                pretty = true;
+            }
             a++;
         }
 
         Collection<Student> students = new Generator().generate( count );
 
         if ( json ) {
-            System.out.println( toJson( students ) );
+            System.out.println( toJson( students, pretty ) );
         } else {
             students.forEach( s -> {
                 System.out.println( s.csvRecord() );
@@ -96,12 +101,12 @@ public class Generator {
     }
 
     /**
-     * Generate a collection of students with random names and birth dates.
-     * The generated collection is guaranteed to contain students that are unique in
+     * Generate a collection of students with random names and birth dates. The
+     * generated collection is guaranteed to contain students that are unique in
      * firstname+lastname+birthdate+gender
      *
      * @param count
-     * @return 
+     * @return
      */
     public Collection<Student> generate( int count ) {
         Set<Student> result = new LinkedHashSet<>();
@@ -118,13 +123,19 @@ public class Generator {
 
     /**
      * Return collection as json array.
+     *
      * @param <E> the generic type of the collection.
      * @param col to convert
      * @return a json array
      */
-    public static <E> String toJson( Collection<E> col ) {
-        Gson gson = new GsonBuilder().registerTypeAdapter( LocalDate.class,
-                new LocalDateJsonAdapter() ).create();
+    public static <E> String toJson( Collection<E> col, boolean pretty ) {
+        GsonBuilder builder
+                = new GsonBuilder().registerTypeAdapter( LocalDate.class,
+                        new LocalDateJsonAdapter() );
+        if ( pretty ) {
+            builder.setPrettyPrinting();
+        }
+        Gson gson = builder.create();
         return gson.toJson( col );
     }
 
