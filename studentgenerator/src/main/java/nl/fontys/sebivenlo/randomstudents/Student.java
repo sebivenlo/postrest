@@ -8,7 +8,7 @@ import java.util.Objects;
  *
  * @author Pieter van den Hombergh {@code pieter.van.den.hombergh@gmail.com}
  */
-public class Student {
+public class Student implements Serializable {
 
     Integer snummer;
     String lastname;
