@@ -44,5 +44,5 @@ is in the `AbstractPostRestService` provided by this project.
 
 To get the demo running, you must feed your postgres server with the data definition and initial data in the db folder.
 
-For convenience a `.../db/loaddb.sh` script is provided, which should work on a decent OS-X or Linux with postgresql and psql (the postgres cli) installed.
+For convenience a `.../db/loaddb.sh` script is provided, which should work on a decent OS-X or GNU/Linux with postgresql and psql (the postgres cli) installed.
 
