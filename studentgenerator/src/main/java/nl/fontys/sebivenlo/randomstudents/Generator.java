@@ -1,5 +1,7 @@
 package nl.fontys.sebivenlo.randomstudents;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.charset.Charset;
@@ -40,6 +42,8 @@ public class Generator {
             System.out.println( s.csvRecord() );
         } );
 
+        System.out.println( toJson( students ) );
+
     }
 
     String girlsNameFile = "girlsnames.txt";
@@ -76,7 +80,8 @@ public class Generator {
         LocalDate dob = now().minusYears( 25 ).
                 plusDays( rnd.nextInt( 7 * 365 ) );
         String lastname = rndFromList( lastnames );
-        String email = (firstname + lastname).toLowerCase() + "@student.fantys.nl";
+        String email = ( firstname + lastname ).toLowerCase()
+                + "@student.fantys.nl";
         return new Student( number++, lastname, firstname, dob, now().getYear(),
                 email, g, "NEW" );
     }
@@ -93,4 +98,11 @@ public class Generator {
     private String rndFromList( List<String> list ) {
         return list.get( rnd.nextInt( list.size() ) );
     }
+
+    public static <E> String toJson( Collection<E> col ) {
+        Gson gson = new GsonBuilder().registerTypeAdapter( LocalDate.class,
+                new LocalDateJsonAdapter() ).create();
+        return gson.toJson( col );
+    }
+
 }
