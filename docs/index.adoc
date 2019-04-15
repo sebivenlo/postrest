@@ -1,0 +1,108 @@
+= postRest
+
+:author:  Pieter van den Hombergh
+:version: V0.1  2019-04-15
+:toc: right
+:icons: font
+:docinfo: shared
+:description: This site contains examples of rest with transactions.
+:keywords: Postgresql minimal code common table expressions
+:source-highlighter: coderay
+:coderay-linenums-mode: inline
+:linkattrs: true
+
+No pojo fidling when the database can do the major parts of the work.
+
+
+
+
+This project uses out of the box PostgreSQL functionality. The demo project is built with the standard jee (version 8, but 7 would do) API.
+The demo runs on payara5 without modification.
+
+[PostgreSQL](https://www.postgresql.org/) has very powerfull json(b) functionality
+built in. This project takes advantage of this by having postgresql do the heavy lifting
+of assembling query results into json, or taking json documents apart to do modifying operation such as insert (post in rest) and update (put in rest).
+
+This makes the standard CRUD operations through a rest api a no-brainer.
+
+As an example:
+
+.creating an rest endpoint
+[source,java]
+----
+@Stateless
+@Path( "students" ) // <1>
+public class StudentsService extends FantysCrudService {
+
+    @Override
+    protected String getRelName() {
+        return "students"; // <2>
+    }
+
+}
+----
+
+<1> Specify the endpoint and
+<2> the table name.
+
+Endpoint and table name often match.
+
+With the appropriate imports will make you a full crud service for a students table,
+and the mentioned "self coded" FantysCrudService also contains next to nothing:
+
+.creating a service by extending AbstractPostResrService
+[source,java]
+----
+abstract class FantysCrudService extends AbstractPostRestService {
+
+    @Resource( lookup = "jdbc/fantys" )
+    void setDataSource( DataSource ds ) {
+        this.dataSource = ds;
+    }
+}
+----
+
+The interface to the heavy lifting delegating code (the delegate being the postgres server)
+is in the `AbstractPostRestService` provided by this project. +
+Yes, that is all the code in your own implementation.
+
+
+To get the demo running, you must feed your postgres server with the data definition and initial data in the db folder.
+
+For convenience a `.../db/loaddb.sh` script is provided, which should work on a decent OS-X or Linux with postgresql and psql (the postgres cli) installed.
+
+
+== Rest and transactions
+
+There is no proper transaction model in rest. This is why transferring documents instead of records is popular, which may have been the
+cause of the document-bases variant of the nosql culture.
+
+Let's specify what I mean with transaction in this context.
+A transaction is an operation that involves modifications on more then one record in one table or multiple modifications across several tables, where modification
+is either insert, update or delete on any of the tables involved.
+
+
+Normal sql does allow transactions quite easily, by means of a transactional block, in which the last statement of the try-catch block (just before the catch) is
+a `connection.commit();`  or a `transaction.rollback();` inside the catch clause on any trouble.
+
+Rest has no concept of try-catch and is state-less, which the try-catch certainly is not. The trick is to
+clump all data for the operation into one document. This could be xml or json. We chose json in this implementation.
+
+Now it is up to the receiver to persist the document. The nosql solution is easy and therefore enticing: Shove the thing into the database as is, and be done with it. Mongodb will sort it out.
+
+In this solution, we opted to have postgresql to go the extra mile, so the effect for the business programmer is the same, but with the benefit of
+still having a proper ACID compliant sql database with all its other tried and true features.
+
+For each document-type you need to provide a sql statement which uses CTE magic to disassemble the document and put the parts in the appropriate table.
+
+The example is a exam result document of a university in a far away galaxy. Its structure is like this:
+
+...
+
+
+
+.sql statement to insert to document in parts into the database
+[source,sql]
+----
+include::processresults.sql[]
+----

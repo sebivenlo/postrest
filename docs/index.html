@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<!--[if IE]><meta http-equiv="X-UA-Compatible" content="IE=edge"><![endif]-->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Asciidoctor 1.5.5">
+<title>postRest</title>
+<link rel="stylesheet" href="css/asciidoctor.css">
+</head>
+<body class="article">
+<div id="header">
+<h1>postRest</h1>
+</div>
+<div id="content">
+<div id="preamble">
+<div class="sectionbody">
+<div class="paragraph">
+<p>No pojo fidling when the database can do the major parts of the work.</p>
+</div>
+<div class="paragraph">
+<p>This project uses out of the box PostgreSQL functionality. The demo project is built with the standard jee (version 8, but 7 would do) API.
+The demo runs on payara5 without modification.</p>
+</div>
+<div class="paragraph">
+<p>[PostgreSQL](<a href="https://www.postgresql.org/" class="bare">https://www.postgresql.org/</a>) has very powerfull json(b) functionality
+built in. This project takes advantage of this by having postgresql do the heavy lifting
+of assembling query results into json, or taking json documents apart to do modifying operation such as insert (post in rest) and update (put in rest).</p>
+</div>
+<div class="paragraph">
+<p>This makes the standard CRUD operations through a rest api a no-brainer.</p>
+</div>
+<div class="paragraph">
+<p>As an example:</p>
+</div>
+<div class="listingblock">
+<div class="title">creating an rest endpoint</div>
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="annotation">@Stateless</span>
+<span class="annotation">@Path</span>( <span class="string"><span class="delimiter">&quot;</span><span class="content">students</span><span class="delimiter">&quot;</span></span> ) <i class="conum" data-value="1"></i><b>(1)</b>
+<span class="directive">public</span> <span class="type">class</span> <span class="class">StudentsService</span> <span class="directive">extends</span> FantysCrudService {
+
+    <span class="annotation">@Override</span>
+    <span class="directive">protected</span> <span class="predefined-type">String</span> getRelName() {
+        <span class="keyword">return</span> <span class="string"><span class="delimiter">&quot;</span><span class="content">students</span><span class="delimiter">&quot;</span></span>; <i class="conum" data-value="2"></i><b>(2)</b>
+    }
+
+}</code></pre>
+</div>
+</div>
+<div class="colist arabic">
+<table>
+<tr>
+<td><i class="conum" data-value="1"></i><b>1</b></td>
+<td>Specify the endpoint and</td>
+</tr>
+<tr>
+<td><i class="conum" data-value="2"></i><b>2</b></td>
+<td>the table name.</td>
+</tr>
+</table>
+</div>
+<div class="paragraph">
+<p>Endpoint and table name often match.</p>
+</div>
+<div class="paragraph">
+<p>With the appropriate imports will make you a full crud service for a students table,
+and the mentioned "self coded" FantysCrudService also contains next to nothing:</p>
+</div>
+<div class="listingblock">
+<div class="title">creating a service by extending AbstractPostResrService</div>
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="java"><span class="directive">abstract</span> <span class="type">class</span> <span class="class">FantysCrudService</span> <span class="directive">extends</span> AbstractPostRestService {
+
+    <span class="annotation">@Resource</span>( lookup = <span class="string"><span class="delimiter">&quot;</span><span class="content">jdbc/fantys</span><span class="delimiter">&quot;</span></span> )
+    <span class="type">void</span> setDataSource( <span class="predefined-type">DataSource</span> ds ) {
+        <span class="local-variable">this</span>.dataSource = ds;
+    }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The interface to the heavy lifting delegating code (the delegate being the postgres server)
+is in the <code>AbstractPostRestService</code> provided by this project.<br>
+Yes, that is all the code in your own implementation.</p>
+</div>
+<div class="paragraph">
+<p>To get the demo running, you must feed your postgres server with the data definition and initial data in the db folder.</p>
+</div>
+<div class="paragraph">
+<p>For convenience a <code>&#8230;&#8203;/db/loaddb.sh</code> script is provided, which should work on a decent OS-X or Linux with postgresql and psql (the postgres cli) installed.</p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_rest_and_transactions">Rest and transactions</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>There is no proper transaction model in rest. This is why transferring documents instead of records is popular, which may have been the
+cause of the document-bases variant of the nosql culture.</p>
+</div>
+<div class="paragraph">
+<p>Let&#8217;s specify what I mean with transaction in this context.
+A transaction is an operation that involves modifications on more then one record in one table or multiple modifications across several tables, where modification
+is either insert, update or delete on any of the tables involved.</p>
+</div>
+<div class="paragraph">
+<p>Normal sql does allow transactions quite easily, by means of a transactional block, in which the last statement of the try-catch block (just before the catch) is
+a <code>connection.commit();</code>  or a <code>transaction.rollback();</code> inside the catch clause on any trouble.</p>
+</div>
+<div class="paragraph">
+<p>Rest has no concept of try-catch and is state-less, which the try-catch certainly is not. The trick is to
+clump all data for the operation into one document. This could be xml or json. We chose json in this implementation.</p>
+</div>
+<div class="paragraph">
+<p>Now it is up to the receiver to persist the document. The nosql solution is easy and therefore enticing: Shove the thing into the database as is, and be done with it. Mongodb will sort it out.</p>
+</div>
+<div class="paragraph">
+<p>In this solution, we opted to have postgresql to go the extra mile, so the effect for the business programmer is the same, but with the benefit of
+still having a proper ACID compliant sql database with all its other tried and true features.</p>
+</div>
+<div class="paragraph">
+<p>For each document-type you need to provide a sql statement which uses CTE magic to disassemble the document and put the parts in the appropriate table.</p>
+</div>
+<div class="paragraph">
+<p>The example is a exam result document of a university in a far away galaxy. Its structure is like this:</p>
+</div>
+<div class="paragraph">
+<p>&#8230;&#8203;</p>
+</div>
+<div class="listingblock">
+<div class="title">sql statement to insert to document in parts into the database</div>
+<div class="content">
+<pre class="CodeRay highlight"><code data-lang="sql"><span class="comment">-- one sql parameter, the json document</span>
+with js <span class="keyword">as</span> (
+     <span class="class">select</span> <span class="predefined">cast</span>(<span class="error">?</span> <span class="keyword">as</span> jsonb)  j ),
+<span class="comment">-- get the teachers array out as virtual table, then aggregate into a sql array</span>
+ teach <span class="keyword">as</span> (<span class="class">select</span> array_agg(t) tt <span class="keyword">from</span> (<span class="class">select</span> jsonb_array_elements_text(j-&gt;<span class="string"><span class="delimiter">'</span><span class="content">examiners</span><span class="delimiter">'</span></span> ) t <span class="keyword">from</span> js) t),
+<span class="comment">-- get and insert the exam meta data like event_date, event_name  and the teachers from the json and the previous teach 'table'</span>
+ meta <span class="keyword">as</span> (<span class="class">insert</span> <span class="class">into</span> exam_events (event_name,event_date,examiners) <span class="class">select</span> j-&gt;&gt;<span class="string"><span class="delimiter">'</span><span class="content">event_name</span><span class="delimiter">'</span></span> <span class="keyword">as</span> event_name,
+      <span class="predefined">cast</span>(j-&gt;&gt;<span class="string"><span class="delimiter">'</span><span class="content">event_date</span><span class="delimiter">'</span></span> <span class="keyword">as</span> <span class="predefined-type">date</span>) <span class="keyword">as</span> event_date, tt <span class="keyword">as</span> examiners <span class="keyword">from</span> js cross <span class="keyword">join</span> teach returning *),
+<span class="comment">-- get the data from the student number,grade  json-array as a two column table. sresult is a table definition  with exactly those columns</span>
+ res1 <span class="keyword">as</span> ( <span class="class">select</span>  snummer,grade <span class="keyword">from</span> js,jsonb_populate_recordset(<span class="predefined-constant">null</span>::sresult, js.j-&gt;<span class="string"><span class="delimiter">'</span><span class="content">results</span><span class="delimiter">'</span></span>) ),
+<span class="comment">-- now do the insert results combine with a reference to the exam_events table (three columns).</span>
+ res2 <span class="keyword">as</span> ( <span class="class">insert</span> <span class="class">into</span> exam_results (exam_event_id,snummer,grade)
+            <span class="class">select</span> exam_event_id,     res1.snummer, res1.grade <span class="keyword">from</span> res1,meta
+            returning * ),
+<span class="comment">-- produce a result but pack it as a json array, because that is what the client likes</span>
+ res3 <span class="keyword">as</span> ( <span class="class">select</span> snummer,lastname,firstname,tussenvoegsel,email,student_class,
+       event_name, event_date,examiners, grade, exam_result_id
+       <span class="keyword">from</span> students <span class="keyword">join</span> res2 <span class="keyword">using</span>(snummer) <span class="keyword">join</span> meta <span class="keyword">using</span>(exam_event_id))
+<span class="comment">-- wrap as json array.</span>
+<span class="class">select</span> array_to_json(array_agg(o),<span class="predefined-constant">true</span>) <span class="keyword">from</span> res3 o;</code></pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div id="footer">
+<div id="footer-text">
+Last updated 2019-04-15 06:43:40 CEST
+</div>
+</div>
+</body>
+</html>

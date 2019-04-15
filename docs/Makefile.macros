@@ -1,0 +1,5 @@
+.SUFFIXES:
+.SUFFIXES: adoc html
+
+%.html: %.adoc
+	asciidoctor -b html5 -a linkcss -a imagesdir=$(IMAGESDIR) -a stylesdir=$(CSSDIR) -a stylesheet=asciidoctor.css  $<
